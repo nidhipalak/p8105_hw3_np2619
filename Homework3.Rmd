@@ -1,0 +1,52 @@
+---
+title: "Homework 3"
+author: "Nidhi Patel"
+date: "10/6/2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(p8105.datasets)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.height = 6,
+  out.width = "90%")
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_color_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+#### Problem 0
+
+Follow the style rubric!!!!
+
+#### Problem 1
+
+```{r dataimport}
+data("instacart")
+```
+
+Instacart dataset logs 1,384,617 observations over 15 Instacart online grocery order variables.  It not only keeps track of the user, order products, reorders, day and times of orders, but also organizes each product into departments and aisles they would be in store. For example, the product, Grated Pecorino Romano Cheese, fis found in the specialty cheese aisle, which falls into the dairy eggs department.   The least ordered department is bulk, with 	1,359 orders, while the most ordered department is produce with 409,087 orders.
+
+
+```{r data}
+instacart %>% 
+  count(aisle) %>% 
+  filter(n > 10000) %>% 
+  mutate(
+    aisle = factor(aisle),
+    aisle = fct_reorder(aisle, n)
+  ) %>% 
+  ggplot(aes(x = aisle, y = n)) +
+  geom_point()
+```
+

@@ -31,11 +31,15 @@ Follow the style rubric!!!!
 
 #### Problem 1
 
+###### Describe data
+
 ```{r dataimport}
 data("instacart")
 ```
 
 Instacart dataset logs `r nrow(instacart)` observations over `r ncol(instacart)` Instacart online grocery order variables.  It not only keeps track of the user, order products, reorders, day and times of orders, but also organizes each product into departments and aisles they would be in store. For example, the product, Grated Pecorino Romano Cheese, is found in the specialty cheese aisle, which falls into the dairy eggs department.   The least ordered department is bulk, with 	1,359 orders, while the most ordered department is produce with 409,087 orders.
+
+###### How many aisles? What is the most ordered aisle?
 
 ```{r P1count}
 instacart %>% 
@@ -44,6 +48,8 @@ instacart %>%
 ```
 
 There are 134 aisles. The fresh vegetables aisle is most ordered from with 150609 orders.
+
+###### Plot aisle orders
 
 ```{r P1plot}
 instacart %>% 
@@ -62,7 +68,9 @@ instacart %>%
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
 ```
  
-```{r P1table}
+###### Top orders from baking ingredients, dog food care and packaged vegetable fruits aisles
+ 
+```{r P1table1}
 instacart %>% 
   filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>% 
   group_by(aisle, product_name) %>% #so, the order of aisle, product_name matters?
@@ -72,4 +80,76 @@ instacart %>%
   arrange(aisle, rank) %>% 
   knitr::kable()
 ```
+
+###### When are apples and ice cream typically ordered?
+
+```{r P1table2}
+dow = tibble(
+    order_dow = 0:6,
+    day = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thurday", "Friday", "Saturday")
+  )
+
+ instacart = left_join(
+    instacart, 
+    dow,
+    by = "order_dow"
+  )
+ 
+instacart %>% 
+  filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>% 
+  group_by(product_name, day, order_dow) %>% 
+  summarize(mean_hod = mean(order_hour_of_day)) %>% 
+  arrange(order_dow) %>% 
+  select(product_name, day, mean_hod) %>% 
+  pivot_wider(
+    names_from = "day",
+    values_from = "mean_hod"
+  ) %>% 
+  knitr::kable()
+```
+
+#### Problem 2
+
+###### Tidy and data wrangle
+
+```{r P2tidy}
+accel =
+  read_csv("./accel_data.csv") %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    activity_1:activity_1440,
+    names_to = "minute",
+    names_prefix = "activity_",
+    values_to = "activity"
+  ) %>% 
+  mutate(
+    day = factor(day),
+    minute = factor(minute),
+    week = factor(week),
+    day_id = factor(day_id),
+    weekday = ifelse(day == "Saturday" | day == "Sunday", rep(FALSE), TRUE)
+  )
+```
+
+The original version of this dataset contained 1436 columns and 25 rows. Activity was spread across 1440 columns and subsequently tidied into columns: minutes and activities. The resulting data has `r nrow(accel)` rows with `rncol(accel)` activity observations. The variables 'week', 'day_id', 'minute' and 'day' were converted to factors. These were converted to factors to ease further wrangling and visualization. Activity was kept as an integer. Finally a logical variable of 'weekday' was added to differentiate weekdays from weekends. 
+
+###### Total activity variable for each day 
+
+```{r P2aggregate}
+activity = 
+  accel %>% 
+  group_by(day, week) %>% 
+  summarize(tot_act = sum(activity)) %>% 
+  pivot_wider(
+    names_from = "day",
+    values_from = "tot_act"
+  ) %>% 
+  select(week, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday)
+  
+
+```
+
+
+
+
 

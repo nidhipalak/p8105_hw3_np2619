@@ -35,18 +35,41 @@ Follow the style rubric!!!!
 data("instacart")
 ```
 
-Instacart dataset logs 1,384,617 observations over 15 Instacart online grocery order variables.  It not only keeps track of the user, order products, reorders, day and times of orders, but also organizes each product into departments and aisles they would be in store. For example, the product, Grated Pecorino Romano Cheese, fis found in the specialty cheese aisle, which falls into the dairy eggs department.   The least ordered department is bulk, with 	1,359 orders, while the most ordered department is produce with 409,087 orders.
+Instacart dataset logs `r nrow(instacart)` observations over `r ncol(instacart)` Instacart online grocery order variables.  It not only keeps track of the user, order products, reorders, day and times of orders, but also organizes each product into departments and aisles they would be in store. For example, the product, Grated Pecorino Romano Cheese, is found in the specialty cheese aisle, which falls into the dairy eggs department.   The least ordered department is bulk, with 	1,359 orders, while the most ordered department is produce with 409,087 orders.
 
+```{r P1count}
+instacart %>% 
+  count(aisle) %>% 
+  arrange(desc(n))
+```
 
-```{r data}
+There are 134 aisles. The fresh vegetables aisle is most ordered from with 150609 orders.
+
+```{r P1plot}
 instacart %>% 
   count(aisle) %>% 
   filter(n > 10000) %>% 
-  mutate(
-    aisle = factor(aisle),
-    aisle = fct_reorder(aisle, n)
+  mutate( #this reorders the x axis.
+    aisle = factor(aisle), #make it a factor
+    aisle = fct_reorder(aisle, n) 
   ) %>% 
   ggplot(aes(x = aisle, y = n)) +
-  geom_point()
+  labs(
+    y = "number of items",
+    title = "number of items ordered in each aisle"
+) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
+ 
+```{r P1table}
+instacart %>% 
+  filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>% 
+  group_by(aisle, product_name) %>% #so, the order of aisle, product_name matters?
+  summarize(n = n()) %>% 
+  mutate(rank = min_rank(desc(n))) %>% 
+  filter(rank < 4) %>% 
+  arrange(aisle, rank) %>% 
+  knitr::kable()
 ```
 

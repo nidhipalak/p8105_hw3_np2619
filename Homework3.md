@@ -148,11 +148,11 @@ accel =
   ) %>% 
   mutate(
     day = factor(day),
-    minute = factor(minute),
+    minute = as.integer(minute),
     week = factor(week),
     day_id = factor(day_id),
     weekday = ifelse(day == "Saturday" | day == "Sunday", rep(FALSE), TRUE)
-  )
+    )
 ```
 
     ## Parsed with column specification:
@@ -167,15 +167,15 @@ The original version of this dataset contained 1436 columns and 25 rows.
 Activity was spread across 1440 columns and subsequently tidied into
 columns: minutes and activities. The resulting data has 50400 rows with
 `rncol(accel)` activity observations. The variables ‘week’, ‘day\_id’,
-‘minute’ and ‘day’ were converted to factors. These were converted to
-factors to ease further wrangling and visualization. Activity was kept
-as an integer. Finally a logical variable of ‘weekday’ was added to
-differentiate weekdays from weekends.
+and ‘day’ were converted to factors; ‘minute’ was converted to an
+integer. These were converted to factors to ease further wrangling and
+visualization. Activity was kept as an integer. Finally a logical
+variable of ‘weekday’ was added to differentiate weekdays from weekends.
 
 ###### Total activity variable for each day
 
 ``` r
-activity = 
+activity =
   accel %>% 
   group_by(day, week) %>% 
   summarize(tot_act = sum(activity)) %>% 
@@ -187,3 +187,52 @@ activity =
 ```
 
     ## `summarise()` regrouping output by 'day' (override with `.groups` argument)
+
+``` r
+knitr::kable(activity) #it wouldn't display the table when i knit if i piped and left () blank.
+```
+
+| week |    Monday |  Tuesday | Wednesday | Thursday |   Friday | Saturday | Sunday |
+| :--- | --------: | -------: | --------: | -------: | -------: | -------: | -----: |
+| 1    |  78828.07 | 307094.2 |    340115 | 355923.6 | 480542.6 |   376254 | 631105 |
+| 2    | 295431.00 | 423245.0 |    440962 | 474048.0 | 568839.0 |   607175 | 422018 |
+| 3    | 685910.00 | 381507.0 |    468869 | 371230.0 | 467420.0 |   382928 | 467052 |
+| 4    | 409450.00 | 319568.0 |    434460 | 340291.0 | 154049.0 |     1440 | 260617 |
+| 5    | 389080.00 | 367824.0 |    445366 | 549658.0 | 620860.0 |     1440 | 138421 |
+
+A pattern may be more consistent activity during the weekdays opposed to
+weekend, which varied greatly week by week. I think it’s interesting
+that the last two Saturday’s recorded the same exact amount of activity
+and they it was extremely lower than anything else recorded. I wonder if
+this outlier is a mistake?
+
+``` r
+accel %>% 
+  group_by(day) %>% 
+  ggplot(aes(x = minute, y = activity, color = week)) +
+  geom_point(alpha = 0.05, size = 0.5) +
+  geom_smooth(se = FALSE) +
+  scale_x_continuous(
+    breaks = c(360, 720, 1080, 1440),
+    labels = c("6h", "12h", "18h", "24h")
+  ) +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
+
+    ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
+
+<img src="Homework3_files/figure-gfm/P2plot-1.png" width="90%" />
+
+24 hour activity time course for each day and make each week a diff
+color. COME BACK TO THIS TO MAKE IT PRETTY OKAY- i think limit the y
+axis
+
+#### Problem 3
+
+``` r
+library(p8105.datasets)
+data("ny_noaa")
+```
+
+This looks like a somewhat tidy dataset with 7 columns of id, date,
+precipitation, snowfall, snowed, maximum and minimum temperature.
